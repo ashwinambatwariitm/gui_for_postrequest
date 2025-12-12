@@ -232,10 +232,16 @@
   }
 
   function copyNextUrl() {
-    const url = document.getElementById("nextUrlText").innerText;
-    navigator.clipboard.writeText(url);
-    alert("URL copied to clipboard!");
+    const fullUrl = document.getElementById("nextUrlText").innerText;
+
+    // Extract ONLY the part before ?email=
+    const cleanUrl = fullUrl.split("?email=")[0];
+
+    navigator.clipboard.writeText(cleanUrl);
+
+    alert("Copied URL:\n" + cleanUrl);
   }
+
 </script>
 
 </body>
