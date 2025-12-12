@@ -5,12 +5,11 @@
   <title>TDS Project POST Helper</title>
 
   <style>
-    /* ===== Global Page Style ===== */
     body {
       font-family: "Segoe UI", Arial, sans-serif;
       margin: 0;
       padding: 40px;
-      background: #eef2f7; /* Soft professional grey-blue */
+      background: #eef2f7;
       display: flex;
       justify-content: center;
     }
@@ -35,7 +34,6 @@
       color: #2b4c7e;
     }
 
-    /* ===== Inputs ===== */
     input, textarea {
       width: 100%;
       padding: 12px;
@@ -53,7 +51,6 @@
       box-shadow: 0 0 4px rgba(74,107,255,0.3);
     }
 
-    /* ===== Button ===== */
     button {
       margin-top: 20px;
       padding: 12px 20px;
@@ -71,7 +68,6 @@
       background: #3a59db;
     }
 
-    /* ===== Response Box ===== */
     #responseBox {
       margin-top: 20px;
       padding: 18px;
@@ -93,7 +89,6 @@
       border-left: 6px solid #ff4d4d;
     }
 
-    /* ===== Next URL box ===== */
     #nextUrlBox {
       margin-top: 20px;
       padding: 18px;
@@ -113,6 +108,7 @@
       border-radius: 6px;
       cursor: pointer;
       transition: 0.2s;
+      margin-right: 10px;
     }
 
     .copy-btn:hover {
@@ -163,37 +159,38 @@
 <div id="responseBox">Waiting...</div>
 
 <h3 style="color:#2b4c7e; margin-top:25px;">Next Task URL:</h3>
+
 <div id="nextUrlBox">
   <div id="nextUrlText">No URL yet</div>
-  <button class="copy-btn" onclick="copyNextUrl()">Copy URL</button>
+
+  <!-- Two Copy Buttons -->
+  <button class="copy-btn" onclick="copyFullUrl()">Copy Full URL</button>
+  <button class="copy-btn" onclick="copyBaseUrl()">Copy Base URL</button>
 </div>
 
-</div> <!-- container end -->
+</div>
 
 <script>
-  // Load saved values
   document.getElementById("submitUrl").value = localStorage.getItem("submitUrl") || "";
   document.getElementById("email").value = localStorage.getItem("email") || "";
   document.getElementById("secret").value = localStorage.getItem("secret") || "";
   document.getElementById("actualSubmitUrl").value = localStorage.getItem("actualSubmitUrl") || "";
 
   async function sendRequest() {
-    const proxyUrl = document.getElementById("submitUrl").value;          // Vercel proxy
-    const actualSubmitUrl = document.getElementById("actualSubmitUrl").value; // IITM server submit URL
+    const proxyUrl = document.getElementById("submitUrl").value;
+    const actualSubmitUrl = document.getElementById("actualSubmitUrl").value;
     const email = document.getElementById("email").value;
     const secret = document.getElementById("secret").value;
     const answer = document.getElementById("answer").value;
     const taskUrl = document.getElementById("url").value;
 
-    // Save one-time fields
     localStorage.setItem("submitUrl", proxyUrl);
     localStorage.setItem("email", email);
     localStorage.setItem("secret", secret);
     localStorage.setItem("actualSubmitUrl", actualSubmitUrl);
 
-    // Updated payload for PROXY
     const payload = {
-      submit_url: actualSubmitUrl,  // This goes to IITM server
+      submit_url: actualSubmitUrl,
       email: email,
       secret: secret,
       url: taskUrl,
@@ -217,7 +214,6 @@
 
       const data = await response.json();
       box.innerText = JSON.stringify(data, null, 2);
-
       box.className = data.correct === true ? "success" : "error";
 
       if (data.url) {
@@ -231,17 +227,18 @@
     }
   }
 
-  function copyNextUrl() {
+  function copyFullUrl() {
     const fullUrl = document.getElementById("nextUrlText").innerText;
-
-    // Extract ONLY the part before ?email=
-    const cleanUrl = fullUrl.split("?email=")[0];
-
-    navigator.clipboard.writeText(cleanUrl);
-
-    alert("Copied URL:\n" + cleanUrl);
+    navigator.clipboard.writeText(fullUrl);
+    alert("Full URL copied:\n" + fullUrl);
   }
 
+  function copyBaseUrl() {
+    const fullUrl = document.getElementById("nextUrlText").innerText;
+    const baseUrl = fullUrl.split("?")[0];
+    navigator.clipboard.writeText(baseUrl);
+    alert("Base URL copied:\n" + baseUrl);
+  }
 </script>
 
 </body>
