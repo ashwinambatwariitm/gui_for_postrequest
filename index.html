@@ -3,64 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <title>TDS Project POST Helper</title>
+
   <style>
+    /* ===== Global Page Style ===== */
     body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      max-width: 700px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #eef2f7; /* Soft professional grey-blue */
+      display: flex;
+      justify-content: center;
     }
-    label { font-weight: bold; display: block; margin-top: 15px; }
+
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      width: 750px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #2b4c7e;
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 15px;
+      display: block;
+      color: #2b4c7e;
+    }
+
+    /* ===== Inputs ===== */
     input, textarea {
       width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      font-size: 14px;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px solid #c3cbe0;
+      font-size: 15px;
+      background: #f8f9fc;
     }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #4a6bff;
+      background: #ffffff;
+      box-shadow: 0 0 4px rgba(74,107,255,0.3);
+    }
+
+    /* ===== Button ===== */
     button {
       margin-top: 20px;
       padding: 12px 20px;
       font-size: 16px;
       cursor: pointer;
-    }
-    #responseBox {
-      margin-top: 30px;
-      padding: 15px;
-      background: #f4f4f4;
-      border: 2px solid #ccc;
-      white-space: pre-wrap;
-      transition: 0.25s;
-    }
-    .success {
-      background: #d4f6d4;
-      border-color: #2ea32e;
-    }
-    .error {
-      background: #ffd6d6;
-      border-color: #ff4d4d;
+      border: none;
+      border-radius: 8px;
+      background: #4a6bff;
+      color: white;
+      font-weight: 600;
+      transition: 0.2s;
     }
 
+    button:hover {
+      background: #3a59db;
+    }
+
+    /* ===== Response Box ===== */
+    #responseBox {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 10px;
+      background: #f0f3fa;
+      border-left: 6px solid #ccc;
+      white-space: pre-wrap;
+      transition: 0.25s;
+      font-size: 15px;
+    }
+
+    .success {
+      background: #e4f9e7;
+      border-left: 6px solid #2ea32e;
+    }
+
+    .error {
+      background: #ffe2e2;
+      border-left: 6px solid #ff4d4d;
+    }
+
+    /* ===== Next URL box ===== */
     #nextUrlBox {
       margin-top: 20px;
-      padding: 15px;
-      background: #eef3ff;
-      border: 2px solid #4a6bff;
+      padding: 18px;
+      background: #e9efff;
+      border-left: 6px solid #4a6bff;
+      border-radius: 10px;
+      display: none;
       font-size: 15px;
-      display: none; /* Hidden until URL is available */
     }
 
     .copy-btn {
-      margin-top: 8px;
-      padding: 8px 15px;
+      margin-top: 10px;
+      padding: 8px 14px;
+      border: none;
+      background: #4a6bff;
+      color: white;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: #3a59db;
+    }
+
+    hr {
+      margin: 25px 0;
+      border: none;
+      border-top: 1px solid #c7d0e6;
     }
   </style>
 </head>
+
 <body>
 
-<h2>TDS POST Request GUI</h2>
+<div class="container">
 
-<p><b>Email</b>, <b>Secret</b> and <b>Submit URL</b> are stored permanently in your browser.</p>
+<h2>TDS Project POST Helper</h2>
+
+<p style="color:#3a4b63;">
+  <b>Email</b>, <b>Secret</b> and <b>Submit URL</b> are stored permanently in your browser.
+</p>
 
 <label>Submit URL (One-time setup)</label>
 <input id="submitUrl" type="text" placeholder="https://tds-llm-analysis.s-anand.net/submit">
@@ -81,14 +156,16 @@
 
 <button onclick="sendRequest()">Send POST Request</button>
 
-<h3>Server Response:</h3>
+<h3 style="color:#2b4c7e; margin-top:25px;">Server Response:</h3>
 <div id="responseBox">Waiting...</div>
 
-<h3>Next Task URL:</h3>
+<h3 style="color:#2b4c7e; margin-top:25px;">Next Task URL:</h3>
 <div id="nextUrlBox">
   <div id="nextUrlText">No URL yet</div>
   <button class="copy-btn" onclick="copyNextUrl()">Copy URL</button>
 </div>
+
+</div> <!-- container end -->
 
 <script>
   // Load saved values
@@ -108,12 +185,7 @@
     localStorage.setItem("email", email);
     localStorage.setItem("secret", secret);
 
-    const payload = {
-      answer: answer,
-      email: email,
-      secret: secret,
-      url: taskUrl
-    };
+    const payload = { answer, email, secret, url: taskUrl };
 
     const box = document.getElementById("responseBox");
     const nextUrlBox = document.getElementById("nextUrlBox");
@@ -133,14 +205,10 @@
       const data = await response.json();
       box.innerText = JSON.stringify(data, null, 2);
 
-      // Color based on "correct"
-      if (data.correct === true) {
-        box.className = "success";
-      } else {
-        box.className = "error";
-      }
+      // Coloring
+      box.className = data.correct === true ? "success" : "error";
 
-      // Extract next URL if present
+      // Extract next task URL
       if (data.url) {
         nextUrlText.innerText = data.url;
         nextUrlBox.style.display = "block";
@@ -149,7 +217,6 @@
     } catch (e) {
       box.className = "error";
       box.innerText = "Error: " + e.toString();
-      nextUrlBox.style.display = "none";
     }
   }
 
