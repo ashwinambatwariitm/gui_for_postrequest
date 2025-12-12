@@ -23,11 +23,16 @@ export default async function handler(req, res) {
 
     const response = await fetch(submit_url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"   // IMPORTANT!
+      },
       body: JSON.stringify(rest)
     });
 
     const data = await response.json();
+
+    res.setHeader("Access-Control-Allow-Origin", "*");
     return res.status(200).json(data);
 
   } catch (err) {
