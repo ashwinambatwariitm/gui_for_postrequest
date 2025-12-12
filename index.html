@@ -137,8 +137,8 @@
   <b>Email</b>, <b>Secret</b> and <b>Submit URL</b> are stored permanently in your browser.
 </p>
 
-<label>Submit URL (One-time setup)</label>
-<input id="submitUrl" type="text" placeholder="https://tds-llm-analysis.s-anand.net/submit">
+<label>Proxy Submit URL (One-time setup)</label>
+<input id="submitUrl" type="text" placeholder="https://your-vercel-app.vercel.app/api/proxy">
 
 <label>Email (One-time)</label>
 <input id="email" type="text" placeholder="Enter your email">
@@ -147,6 +147,9 @@
 <input id="secret" type="text" placeholder="Enter your secret">
 
 <hr>
+
+<label>Actual Submit URL (changes only if IITM changes endpoint)</label>
+<input id="actualSubmitUrl" type="text" placeholder="https://tds-llm-analysis.s-anand.net/submit">
 
 <label>Task URL (changes every task)</label>
 <input id="url" type="text" placeholder="Paste the given task URL">
@@ -172,20 +175,30 @@
   document.getElementById("submitUrl").value = localStorage.getItem("submitUrl") || "";
   document.getElementById("email").value = localStorage.getItem("email") || "";
   document.getElementById("secret").value = localStorage.getItem("secret") || "";
+  document.getElementById("actualSubmitUrl").value = localStorage.getItem("actualSubmitUrl") || "";
 
   async function sendRequest() {
-    const submitUrl = document.getElementById("submitUrl").value;
+    const proxyUrl = document.getElementById("submitUrl").value;          // Vercel proxy
+    const actualSubmitUrl = document.getElementById("actualSubmitUrl").value; // IITM server submit URL
     const email = document.getElementById("email").value;
     const secret = document.getElementById("secret").value;
     const answer = document.getElementById("answer").value;
     const taskUrl = document.getElementById("url").value;
 
     // Save one-time fields
-    localStorage.setItem("submitUrl", submitUrl);
+    localStorage.setItem("submitUrl", proxyUrl);
     localStorage.setItem("email", email);
     localStorage.setItem("secret", secret);
+    localStorage.setItem("actualSubmitUrl", actualSubmitUrl);
 
-    const payload = { answer, email, secret, url: taskUrl };
+    // Updated payload for PROXY
+    const payload = {
+      submit_url: actualSubmitUrl,  // This goes to IITM server
+      email: email,
+      secret: secret,
+      url: taskUrl,
+      answer: answer
+    };
 
     const box = document.getElementById("responseBox");
     const nextUrlBox = document.getElementById("nextUrlBox");
@@ -196,7 +209,7 @@
     nextUrlBox.style.display = "none";
 
     try {
-      const response = await fetch(submitUrl, {
+      const response = await fetch(proxyUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -205,10 +218,8 @@
       const data = await response.json();
       box.innerText = JSON.stringify(data, null, 2);
 
-      // Coloring
       box.className = data.correct === true ? "success" : "error";
 
-      // Extract next task URL
       if (data.url) {
         nextUrlText.innerText = data.url;
         nextUrlBox.style.display = "block";
