@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>TDS Project POST Helper</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      max-width: 700px;
+    }
+    label { font-weight: bold; display: block; margin-top: 15px; }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #responseBox {
+      margin-top: 30px;
+      padding: 15px;
+      background: #f4f4f4;
+      border: 2px solid #ccc;
+      white-space: pre-wrap;
+      transition: 0.25s;
+    }
+    .success {
+      background: #d4f6d4;
+      border-color: #2ea32e;
+    }
+    .error {
+      background: #ffd6d6;
+      border-color: #ff4d4d;
+    }
+
+    #nextUrlBox {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eef3ff;
+      border: 2px solid #4a6bff;
+      font-size: 15px;
+      display: none; /* Hidden until URL is available */
+    }
+
+    .copy-btn {
+      margin-top: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>TDS POST Request GUI</h2>
+
+<p><b>Email</b>, <b>Secret</b> and <b>Submit URL</b> are stored permanently in your browser.</p>
+
+<label>Submit URL (One-time setup)</label>
+<input id="submitUrl" type="text" placeholder="https://tds-llm-analysis.s-anand.net/submit">
+
+<label>Email (One-time)</label>
+<input id="email" type="text" placeholder="Enter your email">
+
+<label>Secret (One-time)</label>
+<input id="secret" type="text" placeholder="Enter your secret">
+
+<hr>
+
+<label>Task URL (changes every task)</label>
+<input id="url" type="text" placeholder="Paste the given task URL">
+
+<label>Answer</label>
+<textarea id="answer" rows="4" placeholder="Write your answer here"></textarea>
+
+<button onclick="sendRequest()">Send POST Request</button>
+
+<h3>Server Response:</h3>
+<div id="responseBox">Waiting...</div>
+
+<h3>Next Task URL:</h3>
+<div id="nextUrlBox">
+  <div id="nextUrlText">No URL yet</div>
+  <button class="copy-btn" onclick="copyNextUrl()">Copy URL</button>
+</div>
+
+<script>
+  // Load saved values
+  document.getElementById("submitUrl").value = localStorage.getItem("submitUrl") || "";
+  document.getElementById("email").value = localStorage.getItem("email") || "";
+  document.getElementById("secret").value = localStorage.getItem("secret") || "";
+
+  async function sendRequest() {
+    const submitUrl = document.getElementById("submitUrl").value;
+    const email = document.getElementById("email").value;
+    const secret = document.getElementById("secret").value;
+    const answer = document.getElementById("answer").value;
+    const taskUrl = document.getElementById("url").value;
+
+    // Save one-time fields
+    localStorage.setItem("submitUrl", submitUrl);
+    localStorage.setItem("email", email);
+    localStorage.setItem("secret", secret);
+
+    const payload = {
+      answer: answer,
+      email: email,
+      secret: secret,
+      url: taskUrl
+    };
+
+    const box = document.getElementById("responseBox");
+    const nextUrlBox = document.getElementById("nextUrlBox");
+    const nextUrlText = document.getElementById("nextUrlText");
+
+    box.className = "";
+    box.innerText = "Sending request...";
+    nextUrlBox.style.display = "none";
+
+    try {
+      const response = await fetch(submitUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      box.innerText = JSON.stringify(data, null, 2);
+
+      // Color based on "correct"
+      if (data.correct === true) {
+        box.className = "success";
+      } else {
+        box.className = "error";
+      }
+
+      // Extract next URL if present
+      if (data.url) {
+        nextUrlText.innerText = data.url;
+        nextUrlBox.style.display = "block";
+      }
+
+    } catch (e) {
+      box.className = "error";
+      box.innerText = "Error: " + e.toString();
+      nextUrlBox.style.display = "none";
+    }
+  }
+
+  function copyNextUrl() {
+    const url = document.getElementById("nextUrlText").innerText;
+    navigator.clipboard.writeText(url);
+    alert("URL copied to clipboard!");
+  }
+</script>
+
+</body>
+</html>
