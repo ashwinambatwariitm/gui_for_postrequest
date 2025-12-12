@@ -17,7 +17,8 @@ export default async function handler(req, res) {
 
     if (!submit_url) {
       return res.status(400).json({
-        error: "submit_url field is required in the request body"
+        error: "submit_url field is required in the request body",
+        received_body: req.body
       });
     }
 
@@ -25,7 +26,7 @@ export default async function handler(req, res) {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "Accept": "application/json"   // IMPORTANT!
+        "Accept": "application/json"
       },
       body: JSON.stringify(rest)
     });
@@ -42,3 +43,10 @@ export default async function handler(req, res) {
     });
   }
 }
+
+// IMPORTANT FIX FOR VERCEL
+export const config = {
+  api: {
+    bodyParser: true
+  }
+};
